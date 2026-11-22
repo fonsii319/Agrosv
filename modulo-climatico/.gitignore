@@ -1,0 +1,8 @@
+data/cache/
+data/raw/
+data/parcels.json
+data/crop_cycles.json
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc

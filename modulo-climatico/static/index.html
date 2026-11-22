@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es-SV">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Módulo Climático — Asistente Agronómico</title>
+<meta name="description" content="Recomendaciones agronómicas explicables a partir de clima real. MVP hackathon, El Salvador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<!-- ======= BARRA SUPERIOR ======= -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 3 C10 9 7 13 7 18 a9 9 0 0 0 18 0 C25 13 22 9 16 3 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M16 12 v12 M16 18 c-2.5 0 -4.5 -2 -4.5 -4.5 M16 21 c2.5 0 4.5 -2 4.5 -4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1 class="brand-title">Módulo Climático</h1>
+        <p class="brand-sub">Asistente agronómico · El Salvador</p>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <span id="fuente-datos" class="badge badge-fuente">fuente: …</span>
+      <span id="hora-actualizacion" class="hora">—</span>
+    </div>
+  </div>
+</header>
+
+<!-- ======= AVISO SIMULADO (oculto por defecto) ======= -->
+<div id="banner-simulado" class="banner-simulado" hidden>
+  <strong>DATOS SIMULADOS</strong> — este escenario es una demostración; no representa condiciones reales.
+</div>
+
+<main class="layout">
+
+  <!-- ======= 1. FICHA DE PARCELA + CONTROLES ======= -->
+  <section class="panel parcela reveal" aria-label="Parcela y cultivo">
+    <div class="parcela-info">
+      <h2 class="parcela-nombre" id="parcela-nombre">Parcela …</h2>
+      <p class="parcela-detalle" id="parcela-detalle">—</p>
+    </div>
+    <form class="controles" id="controles" aria-label="Contexto del cultivo">
+      <label class="control">
+        <span>Cultivo</span>
+        <select id="sel-cultivo">
+          <option value="maiz" selected>Maíz</option>
+        </select>
+      </label>
+      <label class="control">
+        <span>Etapa del cultivo</span>
+        <select id="sel-etapa">
+          <option value="pre_sowing" selected>Pre-siembra</option>
+          <option value="preparation">Preparación del terreno</option>
+          <option value="sowing">Siembra</option>
+          <option value="emergence">Germinación / emergencia</option>
+          <option value="vegetative">Desarrollo vegetativo</option>
+          <option value="flowering">Floración</option>
+          <option value="grain_filling">Llenado de grano</option>
+          <option value="harvest">Cosecha</option>
+        </select>
+      </label>
+      <fieldset class="control control-suelo">
+        <legend>Humedad del suelo <em>(observación de campo)</em></legend>
+        <div class="segmented" role="radiogroup">
+          <button type="button" class="seg-btn" data-suelo="" aria-pressed="true">Sin reporte</button>
+          <button type="button" class="seg-btn" data-suelo="ok" aria-pressed="false">Húmedo a profundidad de semilla</button>
+          <button type="button" class="seg-btn" data-suelo="seco" aria-pressed="false">Seco</button>
+        </div>
+      </fieldset>
+    </form>
+  </section>
+
+  <!-- ======= 2. TARJETA DE DECISIÓN ======= -->
+  <section class="decision reveal" id="decision" aria-live="polite">
+    <div class="decision-estado" id="decision-estado">
+      <span class="estado-icono" id="estado-icono" aria-hidden="true"></span>
+      <span class="estado-texto" id="estado-texto">Consultando…</span>
+    </div>
+    <h2 class="decision-titular" id="decision-titular">Obteniendo datos meteorológicos…</h2>
+    <p class="decision-confianza">
+      Confianza: <span class="badge" id="confianza-badge">—</span>
+      <button class="link-btn" id="btn-porque-confianza" type="button">¿por qué?</button>
+    </p>
+    <div class="decision-columnas">
+      <div>
+        <h3 class="decision-sub">¿Por qué?</h3>
+        <ul class="lista" id="lista-razones"></ul>
+      </div>
+      <div>
+        <h3 class="decision-sub">¿Qué hago ahora?</h3>
+        <ul class="lista lista-acciones" id="lista-acciones"></ul>
+      </div>
+    </div>
+    <details class="trazabilidad" id="detalle-confianza">
+      <summary>Trazabilidad: reglas aplicadas, fuente y confianza</summary>
+      <div class="traza-body">
+        <div id="traza-confianza"></div>
+        <table class="tabla-reglas" id="tabla-reglas">
+          <thead><tr><th>Regla</th><th>Riesgo</th><th>Versión</th><th>Evidencia</th></tr></thead>
+          <tbody id="tbody-reglas"></tbody>
+        </table>
+        <p class="traza-fuente" id="traza-fuente"></p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ======= 3. CONDICIONES ACTUALES ======= -->
+  <section class="reveal" aria-label="Condiciones actuales">
+    <div class="seccion-encabezado">
+      <h2 class="seccion-titulo">Condiciones actuales</h2>
+      <span class="badge badge-observado" id="badge-actual">observado por modelo</span>
+    </div>
+    <div class="grid-clima" id="grid-clima">
+      <article class="tarjeta-clima">
+        <svg viewBox="0 0 24 24" class="icono-clima" aria-hidden="true"><path d="M14 4v10.3a4.5 4.5 0 1 1-4 0V4a2 2 0 1 1 4 0Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="17.5" r="1.8" fill="currentColor"/></svg>
+        <p class="clima-valor"><span id="c-temp">—</span><span class="unidad">°C</span></p>
+        <p class="clima-nombre">Temperatura</p>
+      </article>
+      <article class="tarjeta-clima">
+        <svg viewBox="0 0 24 24" class="icono-clima" aria-hidden="true"><path d="M12 3C8.5 8 6.5 11 6.5 14.5a5.5 5.5 0 0 0 11 0C17.5 11 15.5 8 12 3Z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+        <p class="clima-valor"><span id="c-humedad">—</span><span class="unidad">%</span></p>
+        <p class="clima-nombre">Humedad relativa</p>
+      </article>
+      <article class="tarjeta-clima">
+        <svg viewBox="0 0 24 24" class="icono-clima" aria-hidden="true"><path d="M7 15a5 5 0 1 1 1.3-9.86A6 6 0 0 1 19.5 8 4.2 4.2 0 0 1 18 15Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 18l-1 3M13 18l-1 3M17 18l-1 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <p class="clima-valor"><span id="c-lluvia">—</span><span class="unidad">mm</span></p>
+        <p class="clima-nombre">Lluvia (última hora)</p>
+      </article>
+      <article class="tarjeta-clima">
+        <svg viewBox="0 0 24 24" class="icono-clima" aria-hidden="true"><path d="M3 8h10a2.5 2.5 0 1 0-2.4-3.2M3 12h14a2.5 2.5 0 1 1-2.4 3.2M3 16h7a2 2 0 1 1-1.9 2.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <p class="clima-valor"><span id="c-viento">—</span><span class="unidad">km/h</span></p>
+        <p class="clima-nombre">Viento</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======= 4. PRONÓSTICO 7 DÍAS ======= -->
+  <section class="reveal" aria-label="Pronóstico de 7 días">
+    <div class="seccion-encabezado">
+      <h2 class="seccion-titulo">Pronóstico · próximos 7 días</h2>
+      <span class="badge badge-pronostico" id="badge-pronostico">pronóstico</span>
+    </div>
+    <div class="panel grafico-lluvia">
+      <div class="barras" id="barras-lluvia" role="img" aria-label="Lluvia pronosticada por día"></div>
+      <div class="leyenda">
+        <span><i class="swatch sw-lluvia"></i>Lluvia esperada (mm)</span>
+        <span><i class="swatch sw-temp"></i>Temperatura máx./mín. (°C)</span>
+        <span class="leyenda-nota">La probabilidad (%) y el volumen (mm) son cosas distintas: se muestran por separado.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= 5. INDICADORES + HISTORIAL ======= -->
+  <section class="grid-doble reveal">
+    <div class="panel" aria-label="Indicadores calculados">
+      <div class="seccion-encabezado">
+        <h2 class="seccion-titulo">Indicadores</h2>
+      </div>
+      <dl class="indicadores" id="lista-indicadores"></dl>
+      <p class="nota-tecnica">Umbral de día seco del prototipo: <span id="umbral-seco">1.0</span> mm/día (parámetro configurable, no universal).</p>
+    </div>
+    <div class="panel" id="panel-historial" aria-label="Historial reciente">
+      <div class="seccion-encabezado">
+        <h2 class="seccion-titulo">Historial · 30 días</h2>
+        <span class="badge badge-historico">reanálisis ERA5</span>
+      </div>
+      <div id="historial-contenido">
+        <p class="hist-cifra"><span id="hist-total">—</span> <span class="unidad">mm acumulados</span></p>
+        <div class="sparkline" id="sparkline-historial" role="img" aria-label="Lluvia diaria de los últimos 30 días"></div>
+        <p class="nota-tecnica">Reanálisis de modelo: no es medición de una estación en la parcela.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= 6. DEMO: ESCENARIOS SIMULADOS ======= -->
+  <section class="panel demo reveal" aria-label="Escenarios de demostración">
+    <h2 class="seccion-titulo">Escenarios de demostración</h2>
+    <p class="demo-texto">Pruebe la lógica del motor con datos simulados claramente etiquetados (guía cap. 10):</p>
+    <div class="demo-botones" id="demo-botones">
+      <button type="button" class="demo-btn activo" data-esc="" >Datos reales (Open-Meteo)</button>
+      <button type="button" class="demo-btn" data-esc="favorable">Ventana favorable</button>
+      <button type="button" class="demo-btn" data-esc="lluvias_insuficientes">Lluvias insuficientes</button>
+      <button type="button" class="demo-btn" data-esc="lluvia_intensa">Lluvia intensa</button>
+      <button type="button" class="demo-btn" data-esc="racha_seca">Racha seca</button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>MVP de hackathon · Las recomendaciones son explicables y trazables; los umbrales son de prototipo y requieren validación agronómica local. El dato meteorológico no mide la humedad de suelo de la parcela.</p>
+    <p class="footer-fuente">Fuente meteorológica: Open-Meteo (CC BY 4.0) · Zona horaria: America/El_Salvador</p>
+  </footer>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

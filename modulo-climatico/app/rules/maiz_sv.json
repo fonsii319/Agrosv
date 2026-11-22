@@ -1,0 +1,161 @@
+{
+  "crop": "maiz",
+  "region": "SV",
+  "disclaimer": "Reglas de PROTOTIPO para hackathon. Umbrales ilustrativos (guía cap. 7): requieren validación con agrónomos locales, datos de estaciones y fichas técnicas de cultivo antes de uso operativo.",
+  "rules": [
+    {
+      "rule_id": "MAIZ_PRESIEMBRA_RACHA_SECA_PRONOSTICO_V1",
+      "crop": "maiz",
+      "stage": ["pre_sowing", "sowing", "emergence"],
+      "region": "SV",
+      "priority": 80,
+      "conditions": [
+        {"variable": "rain_forecast.dry_spell_ahead.days", "operator": ">=", "value": 5},
+        {"variable": "field.soil_moisture_observed", "operator": "is_null"}
+      ],
+      "risk": "moderate",
+      "confidence_cap": "low",
+      "headline": "Se pronostica una pausa de lluvia: verifique la humedad antes de sembrar",
+      "reasons": [
+        "El pronóstico indica {rain_forecast.dry_spell_ahead.days} días seguidos sin lluvia significativa (menos de {params.dry_day_threshold_mm} mm/día)",
+        "No se ha registrado la humedad del suelo de la parcela"
+      ],
+      "actions": [
+        "Revise el suelo a profundidad de semilla (5-10 cm) antes de sembrar",
+        "Consulte la actualización del pronóstico mañana",
+        "Si siembra, valore el riesgo de un período seco justo después"
+      ],
+      "recommendation": "Verifique humedad del suelo antes de sembrar",
+      "evidence": "Basada en guía cap. 6.5/7.1 (ejemplo). Requiere validación con agrónomo local.",
+      "version": 1
+    },
+    {
+      "rule_id": "MAIZ_PRESIEMBRA_LLUVIA_INSUFICIENTE_V1",
+      "crop": "maiz",
+      "stage": ["pre_sowing", "sowing"],
+      "region": "SV",
+      "priority": 70,
+      "conditions": [
+        {"variable": "rain_forecast.accum_7d.value_mm", "operator": "<", "value": 10},
+        {"variable": "rain_observed.accum_7d.value_mm", "operator": "<", "value": 10}
+      ],
+      "risk": "moderate",
+      "confidence_cap": "medium",
+      "headline": "Lluvias insuficientes observadas y pronosticadas para establecer el cultivo",
+      "reasons": [
+        "Lluvia observada en 7 días: {rain_observed.accum_7d.value_mm} mm (baja para esta ventana)",
+        "Lluvia pronosticada en 7 días: {rain_forecast.accum_7d.value_mm} mm",
+        "La siembra de secano depende de continuidad de humedad, no solo de una lluvia aislada"
+      ],
+      "actions": [
+        "Verifique la humedad del suelo y el estado de la parcela",
+        "Considere esperar una ventana de lluvia más estable o aplicar el plan hídrico disponible"
+      ],
+      "recommendation": "Esperar ventana más estable o verificar opciones de riego",
+      "evidence": "Umbrales de 10 mm/7d son hipótesis de prototipo (guía cap. 10.2). Validar con climatología local.",
+      "version": 1
+    },
+    {
+      "rule_id": "MAIZ_PRESIEMBRA_LLUVIA_INTENSA_V1",
+      "crop": "maiz",
+      "stage": ["pre_sowing", "sowing", "preparation"],
+      "region": "SV",
+      "priority": 90,
+      "conditions": [
+        {"variable": "rain_forecast.max_daily_mm", "operator": ">=", "value": 50}
+      ],
+      "risk": "high",
+      "confidence_cap": "medium",
+      "headline": "Se pronostica lluvia intensa: riesgo de suelo saturado y erosión",
+      "reasons": [
+        "Se pronostican hasta {rain_forecast.max_daily_mm} mm en un solo día",
+        "Lluvia intensa sobre suelo saturado genera escorrentía, erosión y dificultad de tránsito"
+      ],
+      "actions": [
+        "Evite ingresar maquinaria a suelo saturado",
+        "Revise drenajes de la parcela",
+        "Espere evaluación de humedad y estructura del suelo antes de preparar el terreno"
+      ],
+      "recommendation": "Evitar labores en suelo saturado; revisar drenajes",
+      "evidence": "Umbral de 50 mm/día ilustrativo (guía cap. 10.3). Debe compararse con curvas intensidad-duración-frecuencia locales.",
+      "version": 1
+    },
+    {
+      "rule_id": "MAIZ_FLORACION_CALOR_V1",
+      "crop": "maiz",
+      "stage": ["flowering"],
+      "region": "SV",
+      "priority": 85,
+      "conditions": [
+        {"variable": "temperature_forecast.tmax_max_c", "operator": ">=", "value": 35}
+      ],
+      "risk": "high",
+      "confidence_cap": "medium",
+      "headline": "Calor elevado pronosticado en etapa sensible (floración)",
+      "reasons": [
+        "Se pronostican máximas de hasta {temperature_forecast.tmax_max_c} °C",
+        "La floración es especialmente sensible al estrés por calor y a la demanda de agua (ET₀ pronosticada: {et0.mean_forecast_mm_day} mm/día)"
+      ],
+      "actions": [
+        "Monitoree síntomas de estrés y disponibilidad hídrica",
+        "Programe labores en horas frescas"
+      ],
+      "recommendation": "Vigilar estrés térmico y agua disponible en floración",
+      "evidence": "Umbral de 35 °C ilustrativo (guía cap. 10.4). Usar umbral fisiológico validado por variedad.",
+      "version": 1
+    },
+    {
+      "rule_id": "MAIZ_VENTANA_FAVORABLE_V1",
+      "crop": "maiz",
+      "stage": ["pre_sowing", "sowing"],
+      "region": "SV",
+      "priority": 10,
+      "conditions": [
+        {"variable": "rain_forecast.accum_7d.value_mm", "operator": ">=", "value": 15},
+        {"variable": "rain_forecast.days_with_rain_expected", "operator": ">=", "value": 2},
+        {"variable": "rain_forecast.dry_spell_ahead.days", "operator": "<", "value": 3},
+        {"variable": "rain_forecast.max_daily_mm", "operator": "<", "value": 50}
+      ],
+      "risk": "low",
+      "confidence_cap": "high",
+      "headline": "Posible ventana favorable para la siembra",
+      "reasons": [
+        "Lluvia pronosticada en 7 días: {rain_forecast.accum_7d.value_mm} mm distribuida en {rain_forecast.days_with_rain_expected} días",
+        "Sin racha seca prolongada a la vista ni lluvia extrema pronosticada"
+      ],
+      "actions": [
+        "Confirme la humedad en la parcela a profundidad de semilla",
+        "Siga el pronóstico diario y prepare la siembra conforme al manejo local"
+      ],
+      "recommendation": "Ventana potencialmente favorable; confirmar humedad de campo",
+      "evidence": "Umbrales de prototipo (guía cap. 10.1). La decisión final requiere verificación de parcela.",
+      "version": 1
+    },
+    {
+      "rule_id": "MAIZ_ESTABLECIMIENTO_SEQUIA_SENAL_V1",
+      "crop": "maiz",
+      "stage": ["emergence", "vegetative"],
+      "region": "SV",
+      "priority": 75,
+      "conditions": [
+        {"variable": "rain_observed.dry_streak.days", "operator": ">=", "value": 7},
+        {"variable": "rain_forecast.dry_spell_ahead.days", "operator": ">=", "value": 3}
+      ],
+      "risk": "high",
+      "confidence_cap": "medium",
+      "headline": "Señal meteorológica de estrés hídrico en establecimiento",
+      "reasons": [
+        "Llevan {rain_observed.dry_streak.days} días seguidos sin lluvia significativa (observado por modelo)",
+        "El pronóstico agrega {rain_forecast.dry_spell_ahead.days} días secos más",
+        "Sin medición de suelo no se puede confirmar sequía agrícola"
+      ],
+      "actions": [
+        "Mida la humedad del suelo a profundidad radicular",
+        "Priorice el monitoreo del cultivo y el agua disponible"
+      ],
+      "recommendation": "Medir humedad del suelo y priorizar monitoreo de estrés",
+      "evidence": "Señal meteorológica (guía cap. 6.2/10.2): no equivale a sequía agrícola confirmada.",
+      "version": 1
+    }
+  ]
+}
